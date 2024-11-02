@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AJAX CRUD with json-server</title>
+    <style>
+      .content {
+        width: 80%;
+        float: left;
+      }
+      div {
+        padding: 10px;
+      }
+    </style>
+    <script>
+      window.onload = function () {
+        let btnStu = document.getElementById("btnStu");
+        let btnAdd = document.getElementById("btnAdd");
+
+        btnStu.addEventListener("click", function (event) {
+          event.preventDefault();
+          getAlbums();
+        });
+
+        btnAdd.addEventListener("click", function (event) {
+          event.preventDefault();
+          postData();
+        });
+      };
+
+      // 앨범 데이터를 가져오는 함수
+      function getAlbums() {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:3001/albums");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send();
+
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            const res = JSON.parse(xhr.response);
+            contents.innerHTML = makeList(res);
+          } else {
+            console.log(xhr.status, xhr.statusText);
+          }
+        };
+      }
+
+      // 새로운 앨범 데이터를 추가하는 함수
+      function postData() {
+        let title = document.getElementById("title");
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "http://localhost:3001/albums");
+        xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+        const data = { title: title.value, userId: 1 };
+        xhr.send(JSON.stringify(data));
+
+        xhr.onload = () => {
+          if (xhr.status == 201) {
+            title.value = "";
+            getAlbums();
+          } else {
+            console.log(xhr.status, xhr.statusText);
+          }
+        };
+      }
+
+      // 앨범 목록을 생성하는 함수
+      function makeList(data) {
+        let str = "<ul>";
+        for (let key in data) {
+          str += "<li> " + data[key].title + "</li>";
+          str +=
+            "<button onclick='updateData(\"" + data[key].id + "\")'>Modify</button>";
+          str +=
+            "<button onclick='deleteData(\"" + data[key].id + "\")'>Delete</button>";
+        }
+        str += "</ul>";
+
+        return str;
+      }
+
+      // 앨범 데이터를 수정하는 함수
+      function updateData(id) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", "http://localhost:3001/albums/" + id);
+        xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+        const data = { title: "Updated Title", userId: 1 }; // 예제 데이터
+        xhr.send(JSON.stringify(data));
+
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            getAlbums();
+          } else {
+            console.log(xhr.status, xhr.statusText);
+          }
+        };
+      }
+
+      // 앨범 데이터를 삭제하는 함수
+      function deleteData(id) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("DELETE", "http://localhost:3001/albums/" + id);
+        xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+        xhr.send();
+
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            getAlbums();
+          } else {
+            console.log(xhr.status, xhr.statusText);
+          }
+        };
+      }
+    </script>
+  </head>
+  <body>
+    <button id="btnStu">Bring album data</button>
+    <div>
+      <input type="text" id="title" size="30" placeholder="Title" />
+      <button id="btnAdd" type="button">Add album</button>
+    </div>
+    <div id="contents" style="height: 200px; background-color: lightgoldenrodyellow"></div>
+  </body>
+</html>
